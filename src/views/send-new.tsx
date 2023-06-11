@@ -4,6 +4,7 @@ import type { AbiFunction } from "abitype";
 import { useReducer } from "react";
 
 import { chainSelect } from "@/lib/ethereum";
+import Button from "@/ui/button";
 import Input from "@/ui/input";
 import SelectSearch from "@/ui/select-search";
 
@@ -53,7 +54,7 @@ const SendNewForm = ({}: Props) => {
 
   return (
     <div className="flex w-full flex-col gap-8">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 items-center">
         <SelectSearch
           options={chainSelect}
           value={state.chain}
@@ -64,8 +65,9 @@ const SendNewForm = ({}: Props) => {
           value={state.address}
           setValue={dispatchAddress}
           placeholder="0x"
-          label="Ethereum Address"
+          label="Address"
         />
+        <Button text="Send" />
       </div>
     </div>
   );

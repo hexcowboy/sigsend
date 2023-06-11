@@ -23,7 +23,7 @@ const Input = (
         ref={ref}
         {...props}
         className={twMerge(
-          "text-md h-10 rounded-xl border border-transparent bg-white px-4 font-mono outline-none drop-shadow dark:border-neutral-700 dark:bg-black",
+          "text-md h-12 rounded-xl border border-transparent bg-white px-4 font-mono outline-none drop-shadow dark:border-neutral-700 dark:bg-black",
           props.className
         )}
         value={value}

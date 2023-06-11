@@ -6,7 +6,6 @@ import {
   avalanche,
   avalancheFuji,
   baseGoerli,
-  foundry,
   goerli,
   hardhat,
   localhost,
@@ -33,7 +32,6 @@ export const supportedChains = [
   avalancheFuji,
   aurora,
   auroraTestnet,
-  foundry,
   sepolia,
   baseGoerli,
 ];

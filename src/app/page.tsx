@@ -8,7 +8,7 @@ export default function Home() {
       </main>
       <div className="flex bg-hero bg-cover md:order-first">
         <div className="flex h-full w-full items-center justify-center p-12 backdrop-blur">
-          <div className="bg-white p-12 backdrop-blur dark:bg-black">
+          <div className="bg-white p-14 backdrop-blur dark:bg-black">
             <div className="flex max-w-sm flex-col gap-8">
               <h1 className="text-5xl font-bold">
                 Request Signatures from your{" "}
