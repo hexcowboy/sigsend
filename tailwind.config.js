@@ -1,18 +1,39 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
+  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
   theme: {
     extend: {
       backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-conic':
-          'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
+        hero: "url('/hero.svg')",
+        rainbow:
+          "linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)",
       },
+      height: {
+        screen: ["100dvh", "100vh"],
+      },
+      minHeight: {
+        screen: ["100dvh", "100vh"],
+      },
+    },
+
+    fontFamily: {
+      sans: [
+        "SF Pro Rounded",
+        "ui-rounded",
+        "SF Pro Rounded",
+        "-apple-system",
+        "BlinkMacSystemFont",
+        "Segoe UI",
+        "Roboto",
+        "Helvetica",
+        "Arial",
+        "sans-serif",
+        "Apple Color Emoji",
+        "Segoe UI Emoji",
+        "Segoe UI Symbol",
+      ],
+      mono: ["SF Mono", "ui-monospace", "SFMono-Regular", "monospace"],
     },
   },
   plugins: [],
-}
+};
