@@ -1,3 +1,5 @@
+import Star1 from "@/ui/assets/star-1";
+import Star2 from "@/ui/assets/star-2";
 import SendNewForm from "@/views/send-new";
 
 export default function Home() {
@@ -12,13 +14,23 @@ export default function Home() {
             <div className="flex max-w-sm flex-col gap-8">
               <h1 className="text-5xl font-bold">
                 Request Signatures from your{" "}
-                <span className="bg-rainbow bg-[length:100%_2px] bg-bottom bg-no-repeat">
+                <span className="relative">
                   Frens
+                  <Star1
+                    className="absolute -right-8 bottom-6"
+                    fill="white"
+                    size={24}
+                  />
+                  <Star2
+                    className="absolute -right-8 bottom-2"
+                    fill="white"
+                    size={10}
+                  />
                 </span>
               </h1>
               <p className="text-lg">
-                Fill out some details and we&apos;ll give you a link for someone
-                else to complete the transaction.
+                Fill out some details and get a link for someone else to
+                complete the transaction.
               </p>
             </div>
           </div>

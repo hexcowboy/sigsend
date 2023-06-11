@@ -20,6 +20,7 @@ interface Props extends HTMLAttributes<HTMLInputElement> {
   value: string;
   setValue: (value: string) => void;
   label?: string;
+  disabled?: boolean;
   options: Array<Option>;
 }
 
@@ -33,7 +34,14 @@ const fuseOptions = {
 };
 
 const SelectSearch = (
-  { value, setValue, label, options: options_, ...props }: Props,
+  {
+    value,
+    setValue,
+    label,
+    disabled = false,
+    options: options_,
+    ...props
+  }: Props,
   ref: React.Ref<HTMLInputElement>
 ) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -134,7 +142,14 @@ const SelectSearch = (
   );
 
   return (
-    <span className="relative z-10 flex w-full flex-col" ref={wrapperRef}>
+    <span
+      className={twMerge(
+        "relative flex w-full flex-col",
+        disabled ? "pointer-events-none opacity-50" : "",
+        isOpen ? "z-20" : ""
+      )}
+      ref={wrapperRef}
+    >
       {label ? (
         <label className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
           {label}
@@ -145,7 +160,7 @@ const SelectSearch = (
         ref={ref}
         {...props}
         className={twMerge(
-          "text-md h-12 rounded-xl border border-transparent bg-white px-4 font-mono outline-none drop-shadow dark:border-neutral-700 dark:bg-black",
+          "text-md h-12 rounded-xl border border-neutral-200 bg-white px-4 font-mono outline-none dark:border-neutral-700 dark:bg-black",
           props.className
         )}
         value={inputValue}
@@ -169,7 +184,7 @@ const SelectSearch = (
 
       {isOpen && !!options.length && (
         <div
-          className="absolute top-16 max-h-64 w-full overflow-scroll rounded-xl border border-transparent bg-white py-1 font-mono shadow-lg dark:border-neutral-700 dark:bg-black"
+          className="absolute top-20 max-h-64 w-full overflow-scroll rounded-xl border border-transparent bg-white py-1 font-mono shadow-lg dark:border-neutral-700 dark:bg-black"
           ref={optionsRef}
           tabIndex={-1}
         >

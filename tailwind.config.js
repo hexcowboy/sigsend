@@ -35,5 +35,5 @@ module.exports = {
       mono: ["SF Mono", "ui-monospace", "SFMono-Regular", "monospace"],
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };

@@ -1,3 +1,5 @@
+import { Toaster } from "@/ui/toaster";
+
 import "./globals.css";
 
 export const metadata = {
@@ -15,6 +17,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-white font-sans text-black dark:bg-black dark:text-white">
         {children}
+        <Toaster />
       </body>
     </html>
   );
