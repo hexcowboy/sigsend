@@ -6,14 +6,20 @@ interface Props extends HTMLAttributes<Element> {
   value: string;
   setValue: (value: string) => void;
   label?: string;
+  disabled?: boolean;
 }
 
 const Input = (
-  { value, setValue, label, ...props }: Props,
+  { value, setValue, label, disabled = false, ...props }: Props,
   ref: React.Ref<Element>
 ) => {
   return (
-    <span className="flex w-full flex-col">
+    <span
+      className={twMerge(
+        "flex w-full flex-col",
+        disabled ? "pointer-events-none opacity-50" : ""
+      )}
+    >
       {label ? (
         <label className="ml-2 text-sm text-neutral-500 dark:text-neutral-400">
           {label}
