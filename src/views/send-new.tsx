@@ -10,7 +10,6 @@ import { useToast } from "@/hooks/use-toast";
 import { chainSelect } from "@/lib/ethereum";
 import { getWritableAbiFunctions } from "@/lib/ethereum/abi";
 import { isEns, resolveEns } from "@/lib/ethereum/ens";
-import { isDeepEqual } from "@/lib/util";
 import Button from "@/ui/button";
 import Collapse from "@/ui/collapse";
 import Send from "@/ui/icons/send";
@@ -182,32 +181,43 @@ const SendNewForm = ({}: Props) => {
     if (!isAddress(state.address)) return;
 
     (async () => {
-      setIsAbiLoading(true);
-      const f: GetAbiResponse = await fetch(
-        `/api/get-abi?address=${state.address}&chainId=${state.chain}`
-      )
-        .then((r) => r.json())
-        .catch((e) => console.error(e));
+      try {
+        setIsAbiLoading(true);
+        const response: GetAbiResponse = await fetch(
+          `/api/get-abi?address=${state.address}&chainId=${state.chain}`
+        )
+          .then((r) => r.json())
+          .catch((e) => console.error(e));
 
-      if (f.error) {
-        console.error(f.error);
+        if (response.error) {
+          console.error(response.error);
+          toast({
+            title: "Error",
+            description: response.error,
+          });
+          setInteractionInputs([]);
+          setArgInputs([]);
+          setFunctionInput("Send ETH");
+          setIsAbiLoading(false);
+          return;
+        }
+
+        if (response.abi) {
+          dispatch({ type: "UPDATE_ABI", payload: response.abi });
+          setAbiInput(JSON.stringify(response.abi));
+        }
+      } catch (e) {
+        console.error(e);
         toast({
           title: "Error",
-          description: f.error,
+          description: "Something went wrong",
         });
-        setInteractionInputs([]);
         setArgInputs([]);
         setFunctionInput("Send ETH");
         setIsAbiLoading(false);
-        return;
+      } finally {
+        setIsAbiLoading(false);
       }
-
-      if (f.abi) {
-        dispatch({ type: "UPDATE_ABI", payload: f.abi });
-        setAbiInput(JSON.stringify(f.abi));
-      }
-
-      setIsAbiLoading(false);
     })();
   }, [state.address, state.chain, toast]);
 
@@ -219,13 +229,14 @@ const SendNewForm = ({}: Props) => {
           value={chainInput}
           setValue={setChainInput}
           label="Blockchain"
+          disabled={isAbiLoading}
         />
         <Input
           value={addressInput}
           setValue={setAddressInput}
           placeholder="0x"
           label="Address or ENS"
-          disabled={state.chain === ""}
+          disabled={state.chain === "" || isAbiLoading}
         />
         <Collapse>
           <Textarea

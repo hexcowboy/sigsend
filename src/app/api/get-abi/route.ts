@@ -8,7 +8,7 @@ import { supportedChains } from "@/lib/ethereum";
 import { fetchAbiFromEtherscan } from "@/lib/ethereum/abi";
 
 export type GetAbiResponse = {
-  abi?: string;
+  abi?: Abi;
   error?: string;
 };
 
@@ -75,7 +75,7 @@ export async function GET(
     );
   }
 
-  const abi: string | null = await redis.get(`${chainId}-${address}`);
+  const abi: Abi | null = await redis.get(`${chainId}-${address}`);
   if (abi !== null) {
     return NextResponse.json({ abi }, { headers });
   }
@@ -83,7 +83,7 @@ export async function GET(
   try {
     const abi = await fetchAbiFromEtherscan(chainId, address);
     redis.set(`${chainId}-${address}`, JSON.stringify(abi));
-    return NextResponse.json({ abi: JSON.stringify(abi) }, { headers });
+    return NextResponse.json({ abi: abi }, { headers });
   } catch (e) {
     console.error(e);
     return NextResponse.json(
