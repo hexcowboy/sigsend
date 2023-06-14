@@ -10,10 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { chainSelect } from "@/lib/ethereum";
 import { getWritableAbiFunctions } from "@/lib/ethereum/abi";
 import { isEns, resolveEns } from "@/lib/ethereum/ens";
+import { isDeepEqual } from "@/lib/util";
 import Button from "@/ui/button";
+import Collapse from "@/ui/collapse";
 import Send from "@/ui/icons/send";
 import Input from "@/ui/input";
 import SelectSearch from "@/ui/select-search";
+import Textarea from "@/ui/textarea";
 
 interface Props {}
 
@@ -69,13 +72,17 @@ const SendNewForm = ({}: Props) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [chainInput, setChainInput] = useState("1");
   const [addressInput, setAddressInput] = useState("");
+  const [abiInput, setAbiInput] = useState("");
   const [isAbiLoading, setIsAbiLoading] = useState(false);
   const [functionInput, setFunctionInput] = useState("Send ETH");
   const [interactionInputs, setInteractionInputs] = useState<
     readonly AbiParameter[]
   >([]);
   const [argInputs, setArgInputs] = useState<Array<string>>([]);
+
   const debouncedAddress = useDebounce(addressInput, 600);
+  const debouncedAbi = useDebounce(abiInput, 600);
+
   const { toast } = useToast();
 
   const interactionInputDisabled = !isAddress(state.address) || isAbiLoading;
@@ -124,6 +131,16 @@ const SendNewForm = ({}: Props) => {
     });
     setArgInputs([]);
   }, [state.address]);
+
+  useEffect(() => {
+    try {
+      const newAbi = JSON.parse(debouncedAbi);
+      dispatch({ type: "UPDATE_ABI", payload: newAbi });
+    } catch (e) {
+      setFunctionInput("Send ETH");
+      dispatch({ type: "UPDATE_ABI", payload: [] });
+    }
+  }, [debouncedAbi]);
 
   useEffect(() => {
     const abiFunction = state.abi?.find(
@@ -187,6 +204,7 @@ const SendNewForm = ({}: Props) => {
 
       if (f.abi) {
         dispatch({ type: "UPDATE_ABI", payload: f.abi });
+        setAbiInput(JSON.stringify(f.abi));
       }
 
       setIsAbiLoading(false);
@@ -209,6 +227,15 @@ const SendNewForm = ({}: Props) => {
           label="Address or ENS"
           disabled={state.chain === ""}
         />
+        <Collapse>
+          <Textarea
+            value={abiInput}
+            setValue={setAbiInput}
+            label="ABI"
+            placeholder="[]"
+            disabled={!state.address || isAbiLoading}
+          />
+        </Collapse>
         <SelectSearch
           options={[
             ...[
