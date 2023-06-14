@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { isAddress } from "viem";
 
 import { supportedChains } from "@/lib/ethereum";
-import { fetchAbiFromEtherscan, isProxy } from "@/lib/ethereum/abi";
+import { fetchAbiFromEtherscan } from "@/lib/ethereum/abi";
 
 export type GetAbiResponse = {
   abi?: Abi;

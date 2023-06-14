@@ -116,7 +116,6 @@ const SendNewForm = ({}: Props) => {
   }, [addressInput]);
 
   useEffect(() => {
-    setInteractionInputs([]);
     setFunctionInput("Send ETH");
     dispatch({ type: "UPDATE_ABI", payload: [] });
     dispatch({
@@ -212,7 +211,9 @@ const SendNewForm = ({}: Props) => {
         />
         <SelectSearch
           options={[
-            ...[{ value: "Send ETH", label: "Send ETH" }],
+            ...[
+              { value: SendEthInteraction.inputs[0].name, label: "Send ETH" },
+            ],
             ...(getWritableAbiFunctions(state.abi).map((a) => {
               return {
                 value: a.name,
@@ -228,7 +229,7 @@ const SendNewForm = ({}: Props) => {
         {interactionInputs.map((input, index) => (
           <Input
             key={index}
-            value={argInputs[index]}
+            value={argInputs[index] || ""}
             setValue={(v) => {
               const newArgs = [...argInputs];
               newArgs[index] = v;
