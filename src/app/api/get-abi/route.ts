@@ -5,8 +5,6 @@ import { isAddress } from "viem";
 import { supportedChains } from "@/lib/ethereum";
 import { fetchAbiFromEtherscan } from "@/lib/ethereum/abi";
 
-export const runtime = "edge";
-
 export type GetAbiResponse = {
   abi?: Abi;
   error?: string;
