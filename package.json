@@ -13,6 +13,8 @@
     "@types/node": "20.2.5",
     "@types/react": "18.2.9",
     "@types/react-dom": "18.2.4",
+    "@upstash/ratelimit": "^0.4.3",
+    "@upstash/redis": "^1.21.0",
     "@wagmi/core": "^1.1.1",
     "abitype": "^0.8.8",
     "autoprefixer": "10.4.14",
