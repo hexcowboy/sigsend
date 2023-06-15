@@ -43,7 +43,6 @@ export async function POST(
   request: Request
 ): Promise<NextResponse<SendCreateResponse>> {
   const res = await request.json();
-  console.log("POST", JSON.stringify(res, null, 2));
 
   if (!res.chain) {
     return NextResponse.json({ error: "chain is required" }, { status: 400 });
@@ -97,8 +96,15 @@ export async function POST(
   }
 
   // create the send
-  const uuid = uuidv4();
-  redis.set(`send:${uuid}`, res);
-
-  return NextResponse.json({ uuid });
+  try {
+    const uuid = uuidv4();
+    redis.set(`send:${uuid}`, JSON.stringify(res));
+    return NextResponse.json({ uuid });
+  } catch (e) {
+    console.error(e);
+    return NextResponse.json(
+      { error: "failed to create send" },
+      { status: 500 }
+    );
+  }
 }

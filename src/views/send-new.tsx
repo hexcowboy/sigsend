@@ -307,7 +307,9 @@ const SendNewForm = () => {
               newArgs[index] = v;
               setArgInputs(newArgs);
             }}
-            placeholder={input.type}
+            placeholder={
+              input.type + (input.type.endsWith("[]") ? " comma separated" : "")
+            }
             label={input.name}
             disabled={interactionInputDisabled}
           />
