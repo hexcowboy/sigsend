@@ -43,3 +43,6 @@ export const chainSelect: Array<{ label: string; value: string }> =
       label: chain.name,
       value: chain.id.toString(),
     }));
+
+export const isValidChainId = (chainId: number): boolean =>
+  supportedChains.some((chain) => chain.id === chainId);

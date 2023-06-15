@@ -1,10 +1,11 @@
 "use client";
 
 import type { Abi, AbiFunction, AbiParameter } from "abitype";
-import { useEffect, useReducer, useState } from "react";
+import { useCallback, useEffect, useReducer, useState } from "react";
 import { isAddress } from "viem";
 
-import { GetAbiResponse } from "@/app/api/get-abi/route";
+import type { GetAbiResponse } from "@/app/api/abi/route";
+import type { SendCreateResponse } from "@/app/api/send/route";
 import useDebounce from "@/hooks/use-debounce";
 import { useToast } from "@/hooks/use-toast";
 import { chainSelect } from "@/lib/ethereum";
@@ -13,20 +14,18 @@ import { isEns, resolveEns } from "@/lib/ethereum/ens";
 import Button from "@/ui/button";
 import Collapse from "@/ui/collapse";
 import Send from "@/ui/icons/send";
+import Spinner from "@/ui/icons/spinner";
 import Input from "@/ui/input";
 import SelectSearch from "@/ui/select-search";
 import Textarea from "@/ui/textarea";
 
-interface Props {}
-
 const SendEthInteraction = {
-  inputs: [{ type: "Amount in ETH", name: "Send ETH" }],
+  inputs: [{ type: "Amount in ETH", name: "Pay ETH" }],
 } as const;
 
 type FormInput = {
   chain: string;
   address: string;
-  abi: Abi;
   function?: AbiFunction | typeof SendEthInteraction;
   args: Array<string>;
 };
@@ -34,7 +33,6 @@ type FormInput = {
 type Action =
   | { type: "UPDATE_CHAIN"; payload: string }
   | { type: "UPDATE_ADDRESS"; payload: string }
-  | { type: "UPDATE_ABI"; payload: Abi }
   | {
       type: "UPDATE_FUNCTION";
       payload?: AbiFunction | typeof SendEthInteraction;
@@ -44,7 +42,6 @@ type Action =
 const initialState: FormInput = {
   chain: "1",
   address: "",
-  abi: [],
   args: [],
 };
 
@@ -54,8 +51,6 @@ function reducer(state: FormInput, action: Action): FormInput {
       return { ...state, chain: action.payload };
     case "UPDATE_ADDRESS":
       return { ...state, address: action.payload };
-    case "UPDATE_ABI":
-      return { ...state, abi: action.payload };
     case "UPDATE_FUNCTION":
       return { ...state, function: action.payload };
     case "UPDATE_ARGS":
@@ -67,24 +62,30 @@ function reducer(state: FormInput, action: Action): FormInput {
 
 const options = chainSelect;
 
-const SendNewForm = ({}: Props) => {
+const SendNewForm = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [chainInput, setChainInput] = useState("1");
   const [addressInput, setAddressInput] = useState("");
   const [abiInput, setAbiInput] = useState("");
+  const [abi, setAbi] = useState<Abi>([]);
   const [isAbiLoading, setIsAbiLoading] = useState(false);
-  const [functionInput, setFunctionInput] = useState("Send ETH");
+  const [functionInput, setFunctionInput] = useState<string>(
+    SendEthInteraction.inputs[0].name
+  );
   const [interactionInputs, setInteractionInputs] = useState<
     readonly AbiParameter[]
   >([]);
   const [argInputs, setArgInputs] = useState<Array<string>>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const debouncedAddress = useDebounce(addressInput, 600);
   const debouncedAbi = useDebounce(abiInput, 600);
 
   const { toast } = useToast();
 
-  const interactionInputDisabled = !isAddress(state.address) || isAbiLoading;
+  const generalDisabled = isAbiLoading || isSubmitting;
+  const interactionInputDisabled =
+    !isAddress(state.address) || isAbiLoading || isSubmitting;
 
   useEffect(() => {
     const chosen = options.find((o) => o.value === chainInput);
@@ -97,8 +98,7 @@ const SendNewForm = ({}: Props) => {
   }, [chainInput]);
 
   useEffect(() => {
-    dispatch({ type: "UPDATE_ABI", payload: [] });
-    setInteractionInputs([]);
+    setAbi([]);
   }, [state.chain]);
 
   useEffect(() => {
@@ -122,8 +122,8 @@ const SendNewForm = ({}: Props) => {
   }, [addressInput]);
 
   useEffect(() => {
-    setFunctionInput("Send ETH");
-    dispatch({ type: "UPDATE_ABI", payload: [] });
+    setFunctionInput("Pay ETH");
+    setAbi([]);
     dispatch({
       type: "UPDATE_FUNCTION",
       payload: SendEthInteraction,
@@ -134,15 +134,15 @@ const SendNewForm = ({}: Props) => {
   useEffect(() => {
     try {
       const newAbi = JSON.parse(debouncedAbi);
-      dispatch({ type: "UPDATE_ABI", payload: newAbi });
+      setAbi(newAbi);
     } catch (e) {
-      setFunctionInput("Send ETH");
-      dispatch({ type: "UPDATE_ABI", payload: [] });
+      setFunctionInput("Pay ETH");
+      setAbi([]);
     }
   }, [debouncedAbi]);
 
   useEffect(() => {
-    const abiFunction = state.abi?.find(
+    const abiFunction = abi?.find(
       (f) => (f as AbiFunction).name === functionInput
     ) as AbiFunction;
 
@@ -157,17 +157,22 @@ const SendNewForm = ({}: Props) => {
         payload: SendEthInteraction,
       });
     }
-  }, [functionInput, state.abi]);
+  }, [functionInput, abi]);
 
   useEffect(() => {
     if (!state.function) return;
 
-    setInteractionInputs(state.function.inputs);
+    const optionalPayableInput =
+      (state.function as AbiFunction).stateMutability === "payable"
+        ? [{ type: "Amount in ETH", name: "Pay ETH" }]
+        : [];
+    const inputs = [...optionalPayableInput, ...state.function.inputs];
+    setInteractionInputs(inputs);
     dispatch({
       type: "UPDATE_ARGS",
-      payload: state.function.inputs.map(() => ""),
+      payload: inputs.map(() => ""),
     });
-    setArgInputs(state.function.inputs.map(() => ""));
+    setArgInputs(inputs.map(() => ""));
   }, [state.function]);
 
   useEffect(() => {
@@ -184,10 +189,8 @@ const SendNewForm = ({}: Props) => {
       try {
         setIsAbiLoading(true);
         const response: GetAbiResponse = await fetch(
-          `/api/get-abi?address=${state.address}&chainId=${state.chain}`
-        )
-          .then((r) => r.json())
-          .catch((e) => console.error(e));
+          `/api/abi?address=${state.address}&chainId=${state.chain}`
+        ).then((r) => r.json());
 
         if (response.error) {
           console.error(response.error);
@@ -195,15 +198,14 @@ const SendNewForm = ({}: Props) => {
             title: "Error",
             description: response.error,
           });
-          setInteractionInputs([]);
           setArgInputs([]);
-          setFunctionInput("Send ETH");
+          setFunctionInput("Pay ETH");
           setIsAbiLoading(false);
           return;
         }
 
         if (response.abi) {
-          dispatch({ type: "UPDATE_ABI", payload: response.abi });
+          setAbi(response.abi);
           setAbiInput(JSON.stringify(response.abi));
         }
       } catch (e) {
@@ -213,13 +215,47 @@ const SendNewForm = ({}: Props) => {
           description: "Something went wrong",
         });
         setArgInputs([]);
-        setFunctionInput("Send ETH");
+        setFunctionInput("Pay ETH");
         setIsAbiLoading(false);
       } finally {
         setIsAbiLoading(false);
       }
     })();
   }, [state.address, state.chain, toast]);
+
+  const submit = useCallback(async () => {
+    try {
+      setIsSubmitting(true);
+      const response: SendCreateResponse = await fetch("/api/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(state),
+      }).then((r) => r.json());
+
+      if (response.error) {
+        console.error(response.error);
+        toast({
+          title: "Error",
+          description: response.error,
+        });
+        return;
+      }
+
+      if (response.uuid) {
+        console.log("created", response.uuid);
+      }
+    } catch (e) {
+      console.error(e);
+      toast({
+        title: "Error",
+        description: "Something went wrong",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [state, toast]);
 
   return (
     <div className="flex w-full max-w-md flex-col gap-8">
@@ -229,14 +265,14 @@ const SendNewForm = ({}: Props) => {
           value={chainInput}
           setValue={setChainInput}
           label="Blockchain"
-          disabled={isAbiLoading}
+          disabled={generalDisabled}
         />
         <Input
           value={addressInput}
           setValue={setAddressInput}
           placeholder="0x"
           label="Address or ENS"
-          disabled={state.chain === "" || isAbiLoading}
+          disabled={state.chain === "" || generalDisabled}
         />
         <Collapse>
           <Textarea
@@ -244,15 +280,13 @@ const SendNewForm = ({}: Props) => {
             setValue={setAbiInput}
             label="ABI"
             placeholder="[]"
-            disabled={!state.address || isAbiLoading}
+            disabled={!state.address || generalDisabled}
           />
         </Collapse>
         <SelectSearch
           options={[
-            ...[
-              { value: SendEthInteraction.inputs[0].name, label: "Send ETH" },
-            ],
-            ...(getWritableAbiFunctions(state.abi).map((a) => {
+            ...[{ value: SendEthInteraction.inputs[0].name, label: "Pay ETH" }],
+            ...(getWritableAbiFunctions(abi).map((a) => {
               return {
                 value: a.name,
                 label: a.name,
@@ -280,9 +314,9 @@ const SendNewForm = ({}: Props) => {
         ))}
         <Button
           text="Send"
-          onClick={() => console.log(state)}
-          icon={<Send size={20} />}
-          disabled={!state.function}
+          onClick={submit}
+          icon={isSubmitting ? <Spinner size={20} /> : <Send size={20} />}
+          disabled={!state.function || generalDisabled}
         />
       </div>
     </div>
