@@ -2,7 +2,7 @@ import "@/app/globals.css";
 import { Toaster } from "@/ui/toaster";
 
 export const metadata = {
-  title: "SigSend",
+  title: "✨ SigSend",
   description:
     "Request crypto signatures from your friends, colleagues, and peers.",
 };

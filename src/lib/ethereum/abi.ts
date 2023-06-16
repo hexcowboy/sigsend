@@ -61,7 +61,7 @@ export const fetchAbiFromEtherscan = async (
         });
         if (!data) return [];
 
-        // proxy implementations will still register `true` for `isProxy`, but their
+        // proxy implementations will still register `true` for `isProxy`, but the
         // implementation address will be 0x0
         if (
           data ===

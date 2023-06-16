@@ -2,7 +2,7 @@ interface Props {
   size?: number;
 }
 
-const Send = ({ size = 24 }: Props) => {
+const Close = ({ size = 24 }: Props) => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -23,4 +23,4 @@ const Send = ({ size = 24 }: Props) => {
   );
 };
 
-export default Send;
+export default Close;

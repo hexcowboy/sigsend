@@ -11,17 +11,14 @@ import { useToast } from "@/hooks/use-toast";
 import { chainSelect } from "@/lib/ethereum";
 import { getWritableAbiFunctions } from "@/lib/ethereum/abi";
 import { isEns, resolveEns } from "@/lib/ethereum/ens";
+import { SendEthInteraction } from "@/models/send";
 import Button from "@/ui/button";
 import Collapse from "@/ui/collapse";
-import Send from "@/ui/icons/send";
+import SendIcon from "@/ui/icons/send";
 import Spinner from "@/ui/icons/spinner";
 import Input from "@/ui/input";
 import SelectSearch from "@/ui/select-search";
 import Textarea from "@/ui/textarea";
-
-const SendEthInteraction = {
-  inputs: [{ type: "Amount in ETH", name: "Pay ETH" }],
-} as const;
 
 type FormInput = {
   chain: string;
@@ -133,7 +130,7 @@ const SendNewForm = () => {
   }, [addressInput]);
 
   useEffect(() => {
-    setFunctionInput("Pay ETH");
+    setFunctionInput("Payable Amount");
     setAbi([]);
     dispatch({
       type: "UPDATE_FUNCTION",
@@ -147,7 +144,7 @@ const SendNewForm = () => {
       const newAbi = JSON.parse(debouncedAbiInput);
       setAbi(newAbi);
     } catch (e) {
-      setFunctionInput("Pay ETH");
+      setFunctionInput("Payable Amount");
       setAbi([]);
     }
   }, [debouncedAbiInput]);
@@ -175,7 +172,7 @@ const SendNewForm = () => {
 
     const optionalPayableInput =
       (state.function as AbiFunction).stateMutability === "payable"
-        ? [{ type: "Amount in ETH", name: "Pay ETH" }]
+        ? [{ type: "Amount in ETH", name: "Payable Amount" }]
         : [];
     const inputs = [...optionalPayableInput, ...state.function.inputs];
     setInteractionInputs(inputs);
@@ -210,7 +207,7 @@ const SendNewForm = () => {
             description: response.error,
           });
           setArgInputs([]);
-          setFunctionInput("Pay ETH");
+          setFunctionInput("Payable Amount");
           setIsAbiLoading(false);
           return;
         }
@@ -226,7 +223,7 @@ const SendNewForm = () => {
           description: "Something went wrong",
         });
         setArgInputs([]);
-        setFunctionInput("Pay ETH");
+        setFunctionInput("Payable Amount");
         setIsAbiLoading(false);
       } finally {
         setIsAbiLoading(false);
@@ -296,7 +293,12 @@ const SendNewForm = () => {
         </Collapse>
         <SelectSearch
           options={[
-            ...[{ value: SendEthInteraction.inputs[0].name, label: "Pay ETH" }],
+            ...[
+              {
+                value: SendEthInteraction.inputs[0].name,
+                label: "Payable Amount",
+              },
+            ],
             ...(getWritableAbiFunctions(abi).map((a) => {
               return {
                 value: a.name,
@@ -328,7 +330,7 @@ const SendNewForm = () => {
         <Button
           text="Send"
           onClick={submit}
-          icon={isSubmitting ? <Spinner size={20} /> : <Send size={20} />}
+          icon={isSubmitting ? <Spinner size={20} /> : <SendIcon size={20} />}
           disabled={!state.function || generalDisabled}
         />
       </div>

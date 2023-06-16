@@ -1,17 +1,24 @@
 import { HTMLAttributes, forwardRef } from "react";
 import { twMerge } from "tailwind-merge";
 
-type Element = HTMLInputElement;
-interface Props extends HTMLAttributes<Element> {
+interface Props extends HTMLAttributes<HTMLInputElement> {
   value: string;
   setValue: (value: string) => void;
   label?: string;
   disabled?: boolean;
+  readOnly?: boolean;
 }
 
 const Input = (
-  { value, setValue, label, disabled = false, ...props }: Props,
-  ref: React.Ref<Element>
+  {
+    value,
+    setValue,
+    label,
+    disabled = false,
+    readOnly = false,
+    ...props
+  }: Props,
+  ref: React.Ref<HTMLInputElement>
 ) => {
   return (
     <span
@@ -33,7 +40,9 @@ const Input = (
           props.className
         )}
         value={value}
-        onChange={(e) => setValue((e.target as Element).value)}
+        onChange={(e) => setValue((e.target as HTMLInputElement).value)}
+        readOnly={readOnly}
+        disabled={disabled}
       />
     </span>
   );

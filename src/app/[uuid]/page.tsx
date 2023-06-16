@@ -31,14 +31,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getData(params.uuid);
   try {
     return {
-      title: `Interact with ${data.send.ens ?? data.send.address}`,
+      title: `✨ Interact with ${data.send.ens ?? data.send.address}`,
       description: `Perform action: "${data.send.function.name}" on ${
         data.send.ens ?? data.send.address
       }.`,
     };
   } catch (error) {
     return {
-      title: "Not found",
+      title: "❓ Not found",
     };
   }
 }
@@ -48,7 +48,7 @@ export default async function Page({ params: { uuid } }: Props) {
   console.log(data);
 
   return (
-    <main className="flex flex-col items-center justify-between p-24">
+    <main className="flex flex-col items-center items-stretch justify-between p-24">
       {data.error ? <div>{data.error}</div> : <SendView send={data.send} />}
     </main>
   );

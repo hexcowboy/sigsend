@@ -16,9 +16,9 @@ const Button = (
       {...props}
       ref={ref}
       className={twMerge(
-        "flex items-center gap-1 rounded-xl bg-black px-4 py-2 text-lg font-bold text-white active:mt-[1px] dark:bg-white dark:text-black",
+        "relative flex items-center justify-center gap-1 rounded-xl bg-black px-4 py-2 text-lg font-bold text-white active:top-[1px] dark:bg-white dark:text-black",
         props.className,
-        disabled ? "pointer-events-none opacity-50" : "",
+        disabled ? "pointer-events-none opacity-50" : ""
       )}
     >
       {text}
