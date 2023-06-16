@@ -1,12 +1,13 @@
 import { createPublicClient, http } from "viem";
 import { mainnet } from "viem/chains";
 
-import { supportedChains } from ".";
+import { supportedChains } from "@/lib/ethereum";
 
-export const client = createPublicClient({
-  chain: mainnet,
-  transport: http(),
-});
+export const client = (chainId: number) =>
+  createPublicClient({
+    chain: supportedChains.find((chain) => chain.id === chainId) || mainnet,
+    transport: http(),
+  });
 
 export const createClient = (chainId: number) => {
   const chain = supportedChains.find((chain) => chain.id === chainId);

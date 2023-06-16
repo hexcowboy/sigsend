@@ -4,6 +4,8 @@ import { Hex } from "viem";
 
 import { createClient } from "@/lib/ethereum/client";
 
+import { getBaseApiUrl } from ".";
+
 const proxyAbi = {
   anonymous: false,
   inputs: [
@@ -38,8 +40,9 @@ export const fetchAbiFromEtherscan = async (
   chainId: number,
   address: `0x${string}`
 ): Promise<Abi> => {
+  const baseUrl = getBaseApiUrl(chainId);
   const res = await fetch(
-    `https://api.etherscan.io/api?module=contract&action=getabi&address=${address}&apikey=${process.env.ETHERSCAN_API_KEY}`
+    `${baseUrl}?module=contract&action=getabi&address=${address}&apikey=${process.env.ETHERSCAN_API_KEY}`
   );
   const json = await res.json();
 

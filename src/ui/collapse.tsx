@@ -12,7 +12,7 @@ const Collapse = ({ children }: Props) => {
   return (
     <div className="w-full">
       <span
-        className="ml-2 flex items-center text-sm text-neutral-500 dark:text-neutral-400"
+        className="ml-2 flex select-none items-center text-sm text-neutral-500 dark:text-neutral-400"
         {...getToggleProps()}
       >
         {isExpanded ? "Hide ABI" : "Show ABI"}

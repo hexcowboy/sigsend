@@ -1,6 +1,5 @@
+import "@/app/globals.css";
 import { Toaster } from "@/ui/toaster";
-
-import "./globals.css";
 
 export const metadata = {
   title: "SigSend",

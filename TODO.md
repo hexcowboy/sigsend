@@ -1,3 +1,0 @@
-- Use the chainId when fetching the ABI from Etherscan
-  - The chain may not always have an Etherscan URL so check both locally and on server
-- Handle payable functions (add ETH field)

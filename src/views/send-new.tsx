@@ -26,6 +26,7 @@ const SendEthInteraction = {
 type FormInput = {
   chain: string;
   address: string;
+  ens?: string;
   function?: AbiFunction | typeof SendEthInteraction;
   args: Array<string>;
 };
@@ -33,6 +34,7 @@ type FormInput = {
 type Action =
   | { type: "UPDATE_CHAIN"; payload: string }
   | { type: "UPDATE_ADDRESS"; payload: string }
+  | { type: "UPDATE_ENS"; payload: string }
   | {
       type: "UPDATE_FUNCTION";
       payload?: AbiFunction | typeof SendEthInteraction;
@@ -51,6 +53,8 @@ function reducer(state: FormInput, action: Action): FormInput {
       return { ...state, chain: action.payload };
     case "UPDATE_ADDRESS":
       return { ...state, address: action.payload };
+    case "UPDATE_ENS":
+      return { ...state, ens: action.payload };
     case "UPDATE_FUNCTION":
       return { ...state, function: action.payload };
     case "UPDATE_ARGS":
@@ -78,8 +82,8 @@ const SendNewForm = () => {
   const [argInputs, setArgInputs] = useState<Array<string>>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const debouncedAddress = useDebounce(addressInput, 600);
-  const debouncedAbi = useDebounce(abiInput, 600);
+  const debouncedAddressInput = useDebounce(addressInput, 600);
+  const debouncedAbiInput = useDebounce(abiInput, 600);
 
   const { toast } = useToast();
 
@@ -103,17 +107,24 @@ const SendNewForm = () => {
 
   useEffect(() => {
     (async () => {
-      if (isAddress(debouncedAddress)) {
+      if (isAddress(debouncedAddressInput)) {
         return;
-      } else if (isEns(debouncedAddress)) {
-        const address = await resolveEns(debouncedAddress);
-        if (address) dispatch({ type: "UPDATE_ADDRESS", payload: address });
+      } else if (isEns(debouncedAddressInput)) {
+        const address = await resolveEns(
+          parseInt(state.chain),
+          debouncedAddressInput
+        );
+        if (address) {
+          dispatch({ type: "UPDATE_ADDRESS", payload: address });
+          dispatch({ type: "UPDATE_ENS", payload: debouncedAddressInput });
+        }
         return;
       }
 
       dispatch({ type: "UPDATE_ADDRESS", payload: "" });
+      dispatch({ type: "UPDATE_ENS", payload: "" });
     })();
-  }, [debouncedAddress]);
+  }, [debouncedAddressInput, state.chain]);
 
   useEffect(() => {
     if (isAddress(addressInput)) {
@@ -133,13 +144,13 @@ const SendNewForm = () => {
 
   useEffect(() => {
     try {
-      const newAbi = JSON.parse(debouncedAbi);
+      const newAbi = JSON.parse(debouncedAbiInput);
       setAbi(newAbi);
     } catch (e) {
       setFunctionInput("Pay ETH");
       setAbi([]);
     }
-  }, [debouncedAbi]);
+  }, [debouncedAbiInput]);
 
   useEffect(() => {
     const abiFunction = abi?.find(

@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from "uuid";
 import { isAddress } from "viem";
 
 import { isValidChainId } from "@/lib/ethereum";
+import { resolveEns } from "@/lib/ethereum/ens";
 import { redis } from "@/lib/redis";
 
 export type SendCreateResponse = {
@@ -43,56 +44,79 @@ export async function POST(
   request: Request
 ): Promise<NextResponse<SendCreateResponse>> {
   const res = await request.json();
+  console.log(JSON.stringify(res, null, 2));
+
+  if (res.length > 2000) {
+    return NextResponse.json(
+      { error: "Request body is too large" },
+      { status: 400 }
+    );
+  }
 
   if (!res.chain) {
-    return NextResponse.json({ error: "chain is required" }, { status: 400 });
+    return NextResponse.json({ error: "Chain is required" }, { status: 400 });
   }
 
   let chainId: number;
   try {
     chainId = parseInt(res.chain);
   } catch (e) {
-    return NextResponse.json({ error: "chain is invalid" }, { status: 400 });
+    return NextResponse.json({ error: "Chain is invalid" }, { status: 400 });
   }
 
   if (!isValidChainId(chainId)) {
-    return NextResponse.json({ error: "chain is invalid" }, { status: 400 });
+    return NextResponse.json({ error: "Chain is invalid" }, { status: 400 });
   }
 
   if (!res.address || !isAddress(res.address)) {
-    return NextResponse.json({ error: "address is invalid" }, { status: 400 });
+    return NextResponse.json({ error: "Address is invalid" }, { status: 400 });
   }
 
   if (!res.args || !Array.isArray(res.args)) {
-    return NextResponse.json({ error: "args is required" }, { status: 400 });
+    return NextResponse.json({ error: "Args is required" }, { status: 400 });
   }
 
   if (!res.function) {
     return NextResponse.json(
-      { error: "function is required" },
-      { status: 400 }
-    );
-  }
-
-  if (!res.function.name) {
-    return NextResponse.json(
-      { error: "function.name is required" },
+      { error: "Function is required" },
       { status: 400 }
     );
   }
 
   if (!res.function.inputs || !Array.isArray(res.function.inputs)) {
     return NextResponse.json(
-      { error: "function.inputs is required" },
+      { error: "Function inputs is required" },
       { status: 400 }
     );
   }
 
+  for (const { type, name } of res.function.inputs) {
+    if (!name) {
+      return NextResponse.json(
+        { error: "Function input type is required" },
+        { status: 400 }
+      );
+    }
+    if (!type) {
+      return NextResponse.json(
+        { error: "Function input name is required" },
+        { status: 400 }
+      );
+    }
+  }
+
   if (res.function.inputs.length !== res.args.length) {
     return NextResponse.json(
-      { error: "function.inputs and args must be the same length" },
+      { error: "Function.inputs and args must be the same length" },
       { status: 400 }
     );
+  }
+
+  if (res.ens && typeof res.ens === "string") {
+    const ens = resolveEns(chainId, res.ens);
+    if (!ens) {
+      return NextResponse.json({ error: "ENS is invalid" }, { status: 400 });
+    }
   }
 
   // create the send
@@ -103,7 +127,7 @@ export async function POST(
   } catch (e) {
     console.error(e);
     return NextResponse.json(
-      { error: "failed to create send" },
+      { error: "Failed to create send" },
       { status: 500 }
     );
   }
