@@ -1,6 +1,8 @@
 import {
   RainbowKitProvider,
   connectorsForWallets,
+  darkTheme,
+  lightTheme,
 } from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import {
@@ -30,6 +32,7 @@ import { WagmiConfig, configureChains, createConfig } from "wagmi";
 import { alchemyProvider } from "wagmi/providers/alchemy";
 import { publicProvider } from "wagmi/providers/public";
 
+import usePrefersColorScheme from "@/hooks/use-color-scheme";
 import { supportedChains } from "@/lib/ethereum";
 
 const { chains, publicClient } = configureChains(supportedChains, [
@@ -82,9 +85,14 @@ interface Props {
 }
 
 const RainbowkitProvider = ({ children }: Props) => {
+  const theme = usePrefersColorScheme();
+  const rainbowKitTheme = theme === "dark" ? darkTheme() : undefined;
+
   return (
     <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains}>{children}</RainbowKitProvider>
+      <RainbowKitProvider chains={chains} theme={rainbowKitTheme}>
+        {children}
+      </RainbowKitProvider>
     </WagmiConfig>
   );
 };

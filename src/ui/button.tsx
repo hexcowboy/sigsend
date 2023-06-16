@@ -18,8 +18,11 @@ const Button = (
       className={twMerge(
         "relative flex items-center justify-center gap-1 rounded-xl bg-black px-4 py-2 text-lg font-bold text-white active:top-[1px] dark:bg-white dark:text-black",
         props.className,
-        disabled ? "pointer-events-none opacity-50" : ""
+        disabled
+          ? "cursor-not-allowed opacity-80 active:top-[0] dark:opacity-50"
+          : ""
       )}
+      disabled={disabled}
     >
       {text}
       {icon}

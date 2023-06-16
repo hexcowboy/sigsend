@@ -31,9 +31,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getData(params.uuid);
   try {
     return {
-      title: `✨ Interact with ${data.send.ens ?? data.send.address}`,
+      title: `✨ Interact with ${
+        data.send.ens ? data.send.ens : data.send.address
+      }`,
       description: `Perform action: "${data.send.function.name}" on ${
-        data.send.ens ?? data.send.address
+        data.send.ens ? data.send.ens : data.send.address
       }.`,
     };
   } catch (error) {

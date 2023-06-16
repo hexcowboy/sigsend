@@ -170,11 +170,7 @@ const SendNewForm = () => {
   useEffect(() => {
     if (!state.function) return;
 
-    const optionalPayableInput =
-      (state.function as AbiFunction).stateMutability === "payable"
-        ? [{ type: "Amount in ETH", name: "Payable Amount" }]
-        : [];
-    const inputs = [...optionalPayableInput, ...state.function.inputs];
+    const inputs = state.function.inputs;
     setInteractionInputs(inputs);
     dispatch({
       type: "UPDATE_ARGS",
